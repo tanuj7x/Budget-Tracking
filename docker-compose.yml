@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  spent:
+    build: .
+    image: spent-app:py2
+    environment:
+      - SECRET_KEY=dev-secret
+      - APP_ID=dev-app
+      - SECURE_MODE_KEY=dev-secure
+      - MARSH_SECRET=dev-marsh
+      - POSTGRES_DB_URL=sqlite:///spending.db
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    command: ["python", "server.py",]
+
+

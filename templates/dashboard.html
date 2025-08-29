@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+
+{% block headerstuff %}
+  <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;
+s.src='https://widget.intercom.io/widget/{{ app_id }}';
+var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()
+</script>
+
+<script>
+
+  window.Intercom('boot', {
+   app_id: '{{ app_id }}',
+   name: '{{ name }}',
+   email: '{{ email }}',
+   user_id: '{{ id }}',
+   user_hash: '{{ user_hash }}'
+  });
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert-container">
+      {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar">
+    <div class="user-card">
+      <div class="user-initials">{{ name[:1] if name else 'U' }}</div>
+      <div class="user-meta">
+        <div class="user-name">{{ name }}</div>
+        <div class="user-email">{{ email }}</div>
+      </div>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" data-toggle="modal" data-target="#editProfile" id="edit-profile-account">Account</a></li>
+      <li><a href="/logout" id="sign-out">Sign Out</a></li>
+    </ul>
+  </aside>
+
+  <section class="dashboard-main">
+    <div class="cards-grid">
+      <div class="panel panel-default card">
+        <div class="panel-heading"><h3 class="panel-title">AVERAGE SPENT OVER THE LAST 30 DAYS</h3></div>
+        <div class="panel-body">
+          <div class="expenditure-chart">
+            <canvas id="barChart"></canvas>
+            <div id="barLegend" class="chart-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default card">
+        <div class="panel-heading"><h3 class="panel-title">TOTAL SPENT OVER THE LAST 30 DAYS</h3></div>
+        <div class="panel-body">
+          <div class="expenditure-chart">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default card wide">
+        <div class="panel-heading"><h3 class="panel-title">TOTAL SPENT</h3></div>
+        <div class="panel-body table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Total Spent</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Clothing</th>
+                <td>$<span id="total-spent-5">{{ '%0.2f' % total_clothing_price|float }}</span></td>
+                <td>{{ cat_5_start_date }}</td>
+                <td>{{ cat_5_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Entertainment</th>
+                <td>$<span id="total-spent-6">{{ '%0.2f' % total_entertainment_price|float }}</span></td>
+                <td>{{ cat_6_start_date }}</td>
+                <td>{{ cat_6_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Food</th>
+                <td>$<span id="total-spent-3">{{ '%0.2f' % total_food_price|float }}</span></td>
+                <td>{{ cat_3_start_date }}</td>
+                <td>{{ cat_3_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Groceries</th>
+                <td>$<span id="total-spent-4">{{ '%0.2f' % total_groceries_price|float }}</span></td>
+                <td>{{ cat_4_start_date }}</td>
+                <td>{{ cat_4_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Online Purchases</th>
+                <td>$<span id="total-spent-1">{{ '%0.2f' % total_online_purchase_price|float }}</span></td>
+                <td>{{ cat_1_start_date }}</td>
+                <td>{{ cat_1_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Travel</th>
+                <td>$<span id="total-spent-2">{{ '%0.2f' % total_travel_price|float }}</span></td>
+                <td>{{ cat_2_start_date }}</td>
+                <td>{{ cat_2_end_date }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel panel-default card wide">
+        <div class="panel-heading"><h3 class="panel-title">AVERAGE SPENT</h3></div>
+        <div class="panel-body table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Average Spent</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Clothing</th>
+                <td>$<span id="avg-5">{{ '%0.2f' % avg_clothing_expenditures|float }}</span></td>
+                <td>{{ cat_5_start_date }}</td>
+                <td>{{ cat_5_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Entertainment</th>
+                <td>$<span id="avg-6">{{ '%0.2f' % avg_entertainment_expenditures|float }}</span></td>
+                <td>{{ cat_6_start_date }}</td>
+                <td>{{ cat_6_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Food</th>
+                <td>$<span id="avg-3">{{ '%0.2f' % avg_food_expenditures|float }}</span></td>
+                <td>{{ cat_3_start_date }}</td>
+                <td>{{ cat_3_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Groceries</th>
+                <td>$<span id="avg-4">{{ '%0.2f' % avg_groceries_expenditures|float }}</span></td>
+                <td>{{ cat_4_start_date }}</td>
+                <td>{{ cat_4_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Online Purchases</th>
+                <td>$<span id="avg-1">{{ '%0.2f' % avg_online_expenditures|float }}</span></td>
+                <td>{{ cat_1_start_date }}</td>
+                <td>{{ cat_1_end_date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Travel</th>
+                <td>$<span id="avg-2">{{ '%0.2f' % avg_travel_expenditures|float }}</span></td>
+                <td>{{ cat_2_start_date }}</td>
+                <td>{{ cat_2_end_date }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel panel-default card wide">
+        <div class="panel-heading"><h3 class="panel-title">BUDGET REMAINING</h3></div>
+        <div class="panel-body table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th class="col-md-2">Category</th>
+                <th>Budget Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Clothing</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ clothing_progress }}%" id="progbar-5">
+                      <span id="prognum-5">${{ '%0.2f' % clothing_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Entertainment</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ entertainment_progress }}%" id="progbar-6">
+                      <span id="prognum-6">${{ '%0.2f' % entertainment_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Food</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ food_progress }}%" id="progbar-3">
+                      <span id="prognum-3">${{ '%0.2f' % food_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Groceries</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ groceries_progress }}%" id="progbar-4">
+                      <span id="prognum-4">${{ '%0.2f' % groceries_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Online Purchases</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ online_progress }}%" id="progbar-1">
+                      <span id="prognum-1">${{ '%0.2f' % online_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Travel</th>
+                <td class="col-md-8">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ travel_progress }}%" id="progbar-2">
+                      <span id="prognum-2">${{ '%0.2f' % travel_budget_minus_expenses|float }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel panel-default card wide">
+        <div class="panel-heading">
+          <h3 class="panel-title">EXPENDITURES</h3>
+          <a href="#" data-toggle="modal" data-target="#addExpenditureModal" class="pull-right">Add Expenditure</a>
+        </div>
+        <div class="panel-body table-responsive">
+          <table class="table table-striped" id="table-expenditure-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Date</th>
+                <th>Place</th>
+                <th>Description</th>
+                <th>Track</th>
+                <th>Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expenditure in expenditures %}
+              <tr id="expenditure-row-{{ expenditure.id }}">
+                <th scope="row">{{ expenditure.category.category }}</th>
+                <td>${{ expenditure.price }}</td>
+                <td>{{ expenditure.date_of_expenditure.strftime('%Y-%m-%d') }}</td>
+                <td>{{ expenditure.where_bought }}</td>
+                <td>{{ expenditure.description }}</td>
+                <td>{% if expenditure.tracking_num %}
+                  <form action="/tracking/{{ expenditure.tracking_num }}" method="POST" class="tracking-form"><button type="submit" class="btn btn-lg btn-custom submit-tracking" aria-label="Left Align" data-toggle="modal" data-target="#trackingModal" data-trackingnum="{{expenditure.tracking_num}}">
+                    <span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                  </button></form>{% endif %}
+                </td>
+                <td>
+                  <form action="/remove-expenditure/{{ expenditure.id }}" method="POST" id="expenditure-{{expenditure.id}}">
+                    <button type="submit" data-expenditureid="{{ expenditure.id }}" class="btn btn-lg btn-custom delete-expenditure" aria-label="Left Align">
+                      <span class="glyphicon glyphicon-minus-sign" aria-hidden="true" data-expenditureid="{{ expenditure.id }}"></span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Account Modal (unchanged IDs) -->
+<div class="modal fade" id="editProfile" tabindex="-1" role="dialog" aria-labelledby="editProfileModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Edit Profile Information</h4>
+      </div>
+      <div class="modal-body">
+        <p>
+          <b>Your name:</b><span id="user-name"> {{name}}</span><br>
+          <b>Your email:</b><span id="user-email"> {{ email }}</span><br>
+        </p>
+        <form action="/profile-edit" method="POST" id="form-profile-edit">
+          <fieldset class="form-group">
+            <div class="inner-addon left-addon">
+              <i class="glyphicon glyphicon-user"></i>
+              <input type="text" class="form-control" id="profile-name" placeholder="Edit your name" name="profile-name">
+            </div>
+          </fieldset>
+          <fieldset class="form-group">
+            <div class="inner-addon left-addon">
+              <i class="glyphicon glyphicon-envelope"></i>
+              <input type="text" class="form-control" id="profile-email" placeholder="Add a new email" name="profile-email">
+            </div>
+          </fieldset>
+          <fieldset class="form-group">
+            <div class="inner-addon left-addon">
+              <i class="glyphicon glyphicon-lock"></i>
+              <input type="password" class="form-control" id="new-password" placeholder="Add a new password" name="new-password">
+            </div>
+          </fieldset>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="submit-new-account-info">Save changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tracking Modal (unchanged IDs) -->
+<div class="modal fade" id="trackingModal" tabindex="-1" role="dialog" aria-labelledby="trackingModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="packageTrackModalLabel">Track Your Package</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Current City</th>
+              <th>Current State</th>
+              <th>Current Zipcode</th>
+              <th>Current Country</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><span id="tracking-status"></span></th>
+              <td><span id="tracking-city"></span></td>
+              <td><span id="tracking-state"></span></td>
+              <td><span id="tracking-zipcode"></span></td>
+              <td><span id="tracking-country"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="map"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script src="/static/js/map.js"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnuRecqKx9vRHOa2X6OeYloFTevfJ9GkA" async defer></script>
+<script src="/static/js/charts.js"></script>
+<script src="/static/js/submit-expenditure.js"></script>
+<script src="/static/js/submit-budget.js"></script>
+<script src="/static/js/delete-expenditure.js"></script>
+<script src="/static/js/submit-new-account-info.js"></script>
+<script src="/static/js/intercom-shutdown.js"></script>
+
+{% endblock %}
